@@ -14,11 +14,10 @@ const Header: React.FC = () => {
           <div className="flex items-center space-x-2">
             <Link to="/" className="flex items-center space-x-2">
               <img 
-                src="/placeholder.svg" 
+                src="/lovable-uploads/eb18c465-f2fc-4d01-8c55-99bfe60a2acd.png" 
                 alt="Smart & Speed Abacus Logo" 
-                className="h-10 w-10" 
+                className="h-16" 
               />
-              <span className="font-bold text-xl md:text-2xl">Smart & Speed Abacus</span>
             </Link>
           </div>
           

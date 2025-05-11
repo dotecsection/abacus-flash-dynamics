@@ -28,25 +28,25 @@ const CourseCard: React.FC<CourseProps> = ({ course }) => {
       </div>
       <CardHeader>
         <div className="flex justify-between items-start">
-          <h3 className="text-xl font-bold">{course.title}</h3>
-          <Badge variant="secondary">{course.level}</Badge>
+          <h3 className="text-xl font-bold text-primary">{course.title}</h3>
+          <Badge variant="secondary" className="bg-secondary text-primary">{course.level}</Badge>
         </div>
       </CardHeader>
       <CardContent>
         <p className="text-gray-600 mb-4">{course.description}</p>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <span className="font-semibold">Duration:</span>
+            <span className="font-semibold text-primary">Duration:</span>
             <span>{course.duration}</span>
           </div>
           <div className="flex justify-between">
-            <span className="font-semibold">Classes:</span>
+            <span className="font-semibold text-primary">Classes:</span>
             <span>{course.classes}</span>
           </div>
         </div>
       </CardContent>
       <CardFooter>
-        <Button className="w-full">Enroll Now</Button>
+        <Button className="w-full bg-primary hover:bg-primary/90">Enroll Now</Button>
       </CardFooter>
     </Card>
   );
