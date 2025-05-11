@@ -3,4 +3,6 @@
 #root {
   margin: 0 auto;
   text-align: center;
+  background-color: white;
+  color: hsl(210 64% 24%);
 }
