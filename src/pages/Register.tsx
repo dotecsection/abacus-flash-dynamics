@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -9,16 +9,60 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useForm, Controller } from 'react-hook-form';
 import { toast } from "sonner";
+import { CheckCircle, FileInput } from "lucide-react";
 
 const Register: React.FC = () => {
   const { register, control, handleSubmit, reset, formState: { errors } } = useForm();
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const onSubmit = (data: any) => {
+    // Create a FormData object to handle file uploads
+    const formData = new FormData();
+    
+    // Add all form fields to formData
+    Object.keys(data).forEach(key => {
+      formData.append(key, data[key]);
+    });
+    
+    // Add the file if one was selected
+    if (selectedFile) {
+      formData.append('studentDocument', selectedFile);
+    }
+    
     console.log("Registration form submitted:", data);
+    console.log("File uploaded:", selectedFile);
+    
+    // In a real implementation, you would send this formData to your backend
+    // For example:
+    // fetch('/api/register', {
+    //   method: 'POST',
+    //   body: formData
+    // });
+    
     toast.success("Registration successful! We'll contact you soon.");
+    setIsSubmitted(true);
     reset();
+    setSelectedFile(null);
+    
+    // The form data would be available in the admin dashboard
+    // Store in localStorage for demo purposes (in real app, send to backend)
+    const registrations = JSON.parse(localStorage.getItem('studentRegistrations') || '[]');
+    registrations.push({
+      ...data,
+      fileUploaded: selectedFile ? selectedFile.name : 'No file uploaded',
+      submissionDate: new Date().toISOString()
+    });
+    localStorage.setItem('studentRegistrations', JSON.stringify(registrations));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]);
+    }
   };
 
   return (
@@ -35,6 +79,19 @@ const Register: React.FC = () => {
             </p>
           </div>
         </section>
+        
+        {/* Success Message */}
+        {isSubmitted && (
+          <section className="container mx-auto px-4 py-6">
+            <Alert className="bg-green-50 border-green-200">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              <AlertTitle className="text-green-800">Registration Submitted Successfully!</AlertTitle>
+              <AlertDescription className="text-green-700">
+                Thank you for registering with Smart & Speed Abacus. Our staff will contact you soon to confirm enrollment details.
+              </AlertDescription>
+            </Alert>
+          </section>
+        )}
         
         {/* Registration Form */}
         <section className="container mx-auto px-4 py-16">
@@ -297,6 +354,37 @@ const Register: React.FC = () => {
                             {errors.schedule.message as string}
                           </p>
                         )}
+                      </div>
+                      
+                      {/* Document Upload */}
+                      <div>
+                        <Label htmlFor="document">Upload Document (Optional)</Label>
+                        <div className="flex items-center space-x-4 mt-2">
+                          <div className="flex-1">
+                            <div className="border rounded-md px-3 py-2 bg-white flex items-center">
+                              <FileInput className="h-4 w-4 text-primary mr-2" />
+                              <span className="text-sm text-gray-500">
+                                {selectedFile ? selectedFile.name : 'No file selected'}
+                              </span>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="cursor-pointer">
+                              <span className="bg-primary hover:bg-primary/90 text-white rounded-md px-4 py-2 text-sm font-medium">
+                                Browse
+                              </span>
+                              <input
+                                type="file"
+                                className="hidden"
+                                accept=".pdf,.doc,.docx,.jpg,.png"
+                                onChange={handleFileChange}
+                              />
+                            </label>
+                          </div>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Accepted file types: PDF, DOC, DOCX, JPG, PNG (Max size: 5MB)
+                        </p>
                       </div>
                       
                       <div>
