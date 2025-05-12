@@ -41,9 +41,6 @@ const Header: React.FC = () => {
             <Link to="/faq" className="hover:text-blue-200 transition-colors">FAQ</Link>
             <Link to="/contact" className="hover:text-blue-200 transition-colors">Contact</Link>
             <Link to="/register" className="hover:text-blue-200 transition-colors">Register</Link>
-            <Link to="/login">
-              <Button variant="secondary" size="sm">Admin Login</Button>
-            </Link>
           </nav>
         </div>
         
@@ -60,9 +57,6 @@ const Header: React.FC = () => {
               <Link to="/faq" className="hover:text-blue-200 transition-colors py-2" onClick={() => setIsMenuOpen(false)}>FAQ</Link>
               <Link to="/contact" className="hover:text-blue-200 transition-colors py-2" onClick={() => setIsMenuOpen(false)}>Contact</Link>
               <Link to="/register" className="hover:text-blue-200 transition-colors py-2" onClick={() => setIsMenuOpen(false)}>Register</Link>
-              <Link to="/login" className="py-2" onClick={() => setIsMenuOpen(false)}>
-                <Button variant="secondary" size="sm">Admin Login</Button>
-              </Link>
             </nav>
           </div>
         )}
