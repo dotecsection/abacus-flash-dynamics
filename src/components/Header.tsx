@@ -16,7 +16,7 @@ const Header: React.FC = () => {
               <img 
                 src="/lovable-uploads/eb18c465-f2fc-4d01-8c55-99bfe60a2acd.png" 
                 alt="Smart & Speed Abacus Logo" 
-                className="h-16" 
+                className="h-20" 
               />
             </Link>
           </div>
