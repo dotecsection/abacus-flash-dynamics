@@ -1,10 +1,9 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getStudents, Student, adminLogout } from '@/utils/localDatabase';
+import { getStudents, Student, adminLogout, deleteStudent } from '@/utils/localDatabase';
 import { 
   Table,
   TableBody,
@@ -13,15 +12,43 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
+import { Check, Trash, Eye } from "lucide-react";
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [students, setStudents] = useState<Student[]>([]);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState<string | null>(null);
   
   // Load student data
-  useEffect(() => {
+  const loadStudentData = () => {
     const studentsData = getStudents();
     setStudents(studentsData);
+  };
+  
+  useEffect(() => {
+    loadStudentData();
   }, []);
   
   // Check authentication
@@ -35,6 +62,31 @@ const AdminDashboard: React.FC = () => {
   const handleLogout = () => {
     adminLogout();
     navigate('/login');
+  };
+
+  const handleViewDetails = (student: Student) => {
+    setSelectedStudent(student);
+    setDetailsDialogOpen(true);
+  };
+
+  const handleDeleteClick = (studentId?: string) => {
+    if (!studentId) return;
+    setStudentToDelete(studentId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (!studentToDelete) return;
+    
+    if (deleteStudent(studentToDelete)) {
+      toast.success("Student record deleted successfully");
+      loadStudentData(); // Refresh the student list
+    } else {
+      toast.error("Failed to delete student record");
+    }
+    
+    setDeleteDialogOpen(false);
+    setStudentToDelete(null);
   };
 
   return (
@@ -115,7 +167,7 @@ const AdminDashboard: React.FC = () => {
                       </TableHeader>
                       <TableBody>
                         {students.map((student, index) => (
-                          <TableRow key={index}>
+                          <TableRow key={student.id || index}>
                             <TableCell>{student.firstName} {student.lastName}</TableCell>
                             <TableCell>{student.age}</TableCell>
                             <TableCell>{student.course}</TableCell>
@@ -123,8 +175,21 @@ const AdminDashboard: React.FC = () => {
                             <TableCell>{student.phone}</TableCell>
                             <TableCell>{new Date(student.submissionDate).toLocaleDateString()}</TableCell>
                             <TableCell>
-                              <Button variant="outline" size="sm" className="mr-2">View</Button>
-                              <Button variant="destructive" size="sm">Delete</Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="mr-2" 
+                                onClick={() => handleViewDetails(student)}
+                              >
+                                <Eye className="h-4 w-4 mr-1" /> View
+                              </Button>
+                              <Button 
+                                variant="destructive" 
+                                size="sm"
+                                onClick={() => handleDeleteClick(student.id)}
+                              >
+                                <Trash className="h-4 w-4 mr-1" /> Delete
+                              </Button>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -234,6 +299,86 @@ const AdminDashboard: React.FC = () => {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Student Details Dialog */}
+      <Dialog open={detailsDialogOpen} onOpenChange={setDetailsDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Student Details</DialogTitle>
+            <DialogDescription>
+              Complete information about the student registration.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedStudent && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Personal Information</h3>
+                <div className="space-y-2">
+                  <p><span className="font-medium">Name:</span> {selectedStudent.firstName} {selectedStudent.lastName}</p>
+                  <p><span className="font-medium">Age:</span> {selectedStudent.age}</p>
+                  <p><span className="font-medium">Gender:</span> {selectedStudent.gender}</p>
+                  <p><span className="font-medium">School:</span> {selectedStudent.school}</p>
+                  <p><span className="font-medium">Grade:</span> {selectedStudent.grade}</p>
+                </div>
+                
+                <h3 className="font-semibold text-lg mt-4 mb-2">Parent/Guardian Information</h3>
+                <div className="space-y-2">
+                  <p><span className="font-medium">Parent Name:</span> {selectedStudent.parentName}</p>
+                  <p><span className="font-medium">Relationship:</span> {selectedStudent.relationship}</p>
+                  <p><span className="font-medium">Phone:</span> {selectedStudent.phone}</p>
+                  <p><span className="font-medium">Email:</span> {selectedStudent.email}</p>
+                  <p><span className="font-medium">Address:</span> {selectedStudent.address}</p>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Course Information</h3>
+                <div className="space-y-2">
+                  <p><span className="font-medium">Course:</span> {selectedStudent.course}</p>
+                  <p><span className="font-medium">Schedule:</span> {selectedStudent.schedule}</p>
+                  <p><span className="font-medium">Registration Date:</span> {new Date(selectedStudent.submissionDate).toLocaleDateString()}</p>
+                </div>
+                
+                {selectedStudent.fileUploaded && (
+                  <div className="mt-4">
+                    <h3 className="font-semibold text-lg mb-2">Uploaded Document</h3>
+                    <p>{selectedStudent.fileUploaded}</p>
+                  </div>
+                )}
+                
+                {selectedStudent.comments && (
+                  <div className="mt-4">
+                    <h3 className="font-semibold text-lg mb-2">Additional Comments</h3>
+                    <p className="whitespace-pre-wrap">{selectedStudent.comments}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button onClick={() => setDetailsDialogOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the student record
+              from the database.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

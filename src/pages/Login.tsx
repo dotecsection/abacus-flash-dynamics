@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -15,13 +16,15 @@ import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { adminLogin } from '@/utils/localDatabase';
+import { toast } from "sonner";
+import { LogIn } from 'lucide-react';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { toast: useToastNotification } = useToast();
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,9 +37,8 @@ const Login: React.FC = () => {
       // Use our adminLogin function
       if (adminLogin(username, password)) {
         // Show success message
-        toast({
-          title: "Login Successful",
-          description: "Welcome back, Admin!",
+        toast.success("Login Successful", {
+          description: "Welcome back, Admin!"
         });
         
         // Redirect to admin dashboard
@@ -45,10 +47,8 @@ const Login: React.FC = () => {
         throw new Error('Invalid credentials');
       }
     } catch (error) {
-      toast({
-        title: "Login Failed",
-        description: "Invalid username or password. Please try again.",
-        variant: "destructive",
+      toast.error("Login Failed", {
+        description: "Invalid username or password. Please try again."
       });
     } finally {
       setIsLoading(false);
@@ -90,6 +90,9 @@ const Login: React.FC = () => {
                   required
                 />
               </div>
+              <div className="text-sm text-muted-foreground pt-2">
+                Default credentials: admin / password
+              </div>
             </CardContent>
             <CardFooter>
               <Button 
@@ -97,7 +100,11 @@ const Login: React.FC = () => {
                 className="w-full" 
                 disabled={isLoading}
               >
-                {isLoading ? "Logging in..." : "Login"}
+                {isLoading ? "Logging in..." : (
+                  <>
+                    <LogIn className="mr-2 h-4 w-4" /> Login
+                  </>
+                )}
               </Button>
             </CardFooter>
           </form>
