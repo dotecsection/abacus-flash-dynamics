@@ -1,12 +1,28 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getStudents, Student, adminLogout } from '@/utils/localDatabase';
+import { 
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from "@/components/ui/table";
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const [students, setStudents] = useState<Student[]>([]);
+  
+  // Load student data
+  useEffect(() => {
+    const studentsData = getStudents();
+    setStudents(studentsData);
+  }, []);
   
   // Check authentication
   useEffect(() => {
@@ -17,7 +33,7 @@ const AdminDashboard: React.FC = () => {
   }, [navigate]);
   
   const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated');
+    adminLogout();
     navigate('/login');
   };
 
@@ -46,7 +62,7 @@ const AdminDashboard: React.FC = () => {
               <CardTitle className="text-lg">Total Students</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold">124</p>
+              <p className="text-3xl font-bold">{students.length}</p>
             </CardContent>
           </Card>
           
@@ -64,17 +80,63 @@ const AdminDashboard: React.FC = () => {
               <CardTitle className="text-lg">New Inquiries</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold">12</p>
+              <p className="text-3xl font-bold">{students.filter(s => new Date(s.submissionDate) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length}</p>
             </CardContent>
           </Card>
         </div>
         
-        <Tabs defaultValue="content">
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs defaultValue="students">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="students">Student Registrations</TabsTrigger>
             <TabsTrigger value="content">Content Management</TabsTrigger>
             <TabsTrigger value="slideshow">Slideshow Settings</TabsTrigger>
             <TabsTrigger value="users">User Management</TabsTrigger>
           </TabsList>
+          
+          <TabsContent value="students" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Student Registration Data</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {students.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Age</TableHead>
+                          <TableHead>Course</TableHead>
+                          <TableHead>Parent</TableHead>
+                          <TableHead>Contact</TableHead>
+                          <TableHead>Submission Date</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {students.map((student, index) => (
+                          <TableRow key={index}>
+                            <TableCell>{student.firstName} {student.lastName}</TableCell>
+                            <TableCell>{student.age}</TableCell>
+                            <TableCell>{student.course}</TableCell>
+                            <TableCell>{student.parentName}</TableCell>
+                            <TableCell>{student.phone}</TableCell>
+                            <TableCell>{new Date(student.submissionDate).toLocaleDateString()}</TableCell>
+                            <TableCell>
+                              <Button variant="outline" size="sm" className="mr-2">View</Button>
+                              <Button variant="destructive" size="sm">Delete</Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <p className="text-center py-4">No student registrations yet.</p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
           
           <TabsContent value="content" className="mt-6">
             <Card>

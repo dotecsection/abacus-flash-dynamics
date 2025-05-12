@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -13,6 +12,7 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useForm, Controller } from 'react-hook-form';
 import { toast } from "sonner";
 import { CheckCircle, FileInput } from "lucide-react";
+import { saveStudent } from '@/utils/localDatabase';
 
 const Register: React.FC = () => {
   const { register, control, handleSubmit, reset, formState: { errors } } = useForm();
@@ -36,27 +36,17 @@ const Register: React.FC = () => {
     console.log("Registration form submitted:", data);
     console.log("File uploaded:", selectedFile);
     
-    // In a real implementation, you would send this formData to your backend
-    // For example:
-    // fetch('/api/register', {
-    //   method: 'POST',
-    //   body: formData
-    // });
+    // Save the student data to our local database
+    saveStudent({
+      ...data,
+      fileUploaded: selectedFile ? selectedFile.name : 'No file uploaded',
+      submissionDate: new Date().toISOString()
+    });
     
     toast.success("Registration successful! We'll contact you soon.");
     setIsSubmitted(true);
     reset();
     setSelectedFile(null);
-    
-    // The form data would be available in the admin dashboard
-    // Store in localStorage for demo purposes (in real app, send to backend)
-    const registrations = JSON.parse(localStorage.getItem('studentRegistrations') || '[]');
-    registrations.push({
-      ...data,
-      fileUploaded: selectedFile ? selectedFile.name : 'No file uploaded',
-      submissionDate: new Date().toISOString()
-    });
-    localStorage.setItem('studentRegistrations', JSON.stringify(registrations));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -15,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { adminLogin } from '@/utils/localDatabase';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -28,20 +28,16 @@ const Login: React.FC = () => {
     setIsLoading(true);
     
     try {
-      // In a real app, you would call your authentication API here
-      // For this demo, we'll just use a mock authentication
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Short delay to simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Mock validation - in a real app, this would be server-side
-      if (username === 'admin' && password === 'password') {
+      // Use our adminLogin function
+      if (adminLogin(username, password)) {
         // Show success message
         toast({
           title: "Login Successful",
           description: "Welcome back, Admin!",
         });
-        
-        // Store auth state (in a real app, use a proper auth system)
-        localStorage.setItem('isAuthenticated', 'true');
         
         // Redirect to admin dashboard
         navigate('/admin');
